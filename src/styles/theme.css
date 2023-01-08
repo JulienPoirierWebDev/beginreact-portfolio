@@ -13,13 +13,13 @@
 }
 
 #app.dark {
-  --color-background: 24 3 46;
-  --color-paper: 40 5 75;
+  --color-background: 47 37 25;
+  --color-paper: 75 53 63;
   --color-text-primary: 255 255 255;
   --color-text-secondary: 217 217 217;
 
-  --color-primary: 234 0 255;
-  --color-secondary: 4 217 255;
+  --color-primary: 250 215 9;
+  --color-secondary: 265 57 1;
 }
 
 #app {
