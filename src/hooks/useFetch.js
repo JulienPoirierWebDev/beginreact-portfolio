@@ -1,7 +1,5 @@
-/* GitHub Repository - Exercise */
-import {getListOfUrlRepositoriesUrl} from "../lib/api-url";
-import {GITHUB_USERNAME} from "../lib/config";
-import {useEffect, useReducer} from "react";
+import {useCallback, useEffect, useReducer} from "react";
+import {useIsMounted} from "./useIsMounted";
 
 export const FETCH_ACTIONS = {
     IDLE:"idle",
@@ -13,41 +11,48 @@ export const FETCH_ACTIONS = {
 const fetchReducer = (state, action) => {
     switch (action.type) {
         case FETCH_ACTIONS.IDLE :
-            return {status:FETCH_ACTIONS.IDLE,data:{}}
+            return {status:FETCH_ACTIONS.IDLE,data:null, error:null}
         case FETCH_ACTIONS.PENDING :
-            return {status: FETCH_ACTIONS.PENDING,data:{}}
+            return {status: FETCH_ACTIONS.PENDING,data:null, error: null}
         case FETCH_ACTIONS.RESOLVED:
-            return {status: FETCH_ACTIONS.RESOLVED,data:action.data}
+            return {status: FETCH_ACTIONS.RESOLVED,data:action.data, error:null}
         case FETCH_ACTIONS.REJECTED:
-            return {status:FETCH_ACTIONS.REJECTED,data:{}}
+            return {status:FETCH_ACTIONS.REJECTED,data:null,error : action.error}
         default:
-            throw new Error("This action doesn't exist.")
+            throw new Error(`This action doesn't exist :${action.type}` )
     }
 
 }
 
-export const useFetch = () => {
+export const useFetch = (url, config) => {
 
-    const [projects, dispatch] = useReducer(fetchReducer, {status:FETCH_ACTIONS.IDLE, data:{}})
+    const [projects, dispatch] = useReducer(fetchReducer, {status:FETCH_ACTIONS.IDLE, data:null})
 
+    const isMounted = useIsMounted();
 
-
-
-    useEffect(() => {
-        console.log("projets")
-        fetch(getListOfUrlRepositoriesUrl(GITHUB_USERNAME)).then((res) => {
+    const run = useCallback(() => {
+        fetch(url, config).then((res) => {
 
             dispatch({type:FETCH_ACTIONS.PENDING})
             return res.json()
         }).then((data) => {
+            if(!isMounted()) {
+                return;
+            }
             if(data) {
                 dispatch({type:FETCH_ACTIONS.RESOLVED, data})
             }
         }).catch((err) => {
-            dispatch({type:FETCH_ACTIONS.REJECTED})
-            console.log(err)
+            if(!isMounted()) {
+                return;
+            }
+            dispatch({type:FETCH_ACTIONS.REJECTED, error: err})
         })
-    }, [])
+    }, [config, url, isMounted])
 
-    return [projects, dispatch];
+    useEffect(() => {
+        run()
+    }, [url, config, run])
+
+    return [projects];
 }
