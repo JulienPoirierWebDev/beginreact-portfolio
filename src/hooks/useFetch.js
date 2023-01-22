@@ -26,21 +26,29 @@ const fetchReducer = (state, action) => {
 
 export const useFetch = (url, config) => {
 
-    const [projects, dispatch] = useReducer(fetchReducer, {status:FETCH_ACTIONS.IDLE, data:null})
+    const [state, dispatch] = useReducer(fetchReducer, {
+        status:FETCH_ACTIONS.IDLE,
+        data:null,
+        error:null
+    })
 
     const isMounted = useIsMounted();
 
-    const run = useCallback(() => {
-        fetch(url, config).then((res) => {
+    const {data, error, status} = state;
 
-            dispatch({type:FETCH_ACTIONS.PENDING})
-            return res.json()
-        }).then((data) => {
-            if(!isMounted()) {
+    const run = useCallback(() => {
+        fetch(url, config).then(async (res) => {
+            dispatch({type: FETCH_ACTIONS.PENDING})
+            const json = await res.json();
+
+            if (!isMounted()) {
                 return;
             }
-            if(data) {
-                dispatch({type:FETCH_ACTIONS.RESOLVED, data})
+
+            if (res.ok) {
+                dispatch({type: FETCH_ACTIONS.RESOLVED, data:json})
+            } else {
+                dispatch({type:FETCH_ACTIONS.REJECTED, error:json})
             }
         }).catch((err) => {
             if(!isMounted()) {
@@ -54,5 +62,10 @@ export const useFetch = (url, config) => {
         run()
     }, [url, config, run])
 
-    return [projects];
+    return {
+        error,
+        status,
+        data,
+        run
+    }
 }

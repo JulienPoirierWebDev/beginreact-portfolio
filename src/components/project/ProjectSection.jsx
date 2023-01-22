@@ -12,13 +12,13 @@ export const ProjectSection = () => {
   //const [projects, setProjects] = useState({});
   //const [fetchState, setFetchState] = useState("idle")
 
-  const [projects] = useFetch(getListOfUrlRepositoriesUrl(GITHUB_USERNAME))
+  const {data, status} = useFetch(getListOfUrlRepositoriesUrl(GITHUB_USERNAME))
 
-    if(projects.status === (FETCH_ACTIONS.PENDING || FETCH_ACTIONS.IDLE)) {
+    if(status === (FETCH_ACTIONS.PENDING || FETCH_ACTIONS.IDLE)) {
         return <Loader/>
     }
 
-    if(projects?.status === FETCH_ACTIONS.REJECTED) {
+    if(status === FETCH_ACTIONS.REJECTED) {
         return <p>Error !</p>
     }
 
@@ -26,7 +26,7 @@ export const ProjectSection = () => {
   return (
     <SectionWrapper title="Projects">
       <div className="flex flex-wrap justify-center gap-8">
-          {projects?.data?.map((project) => {
+          {data?.map((project) => {
               return <Project key={project.url} {...project} />
             })
           }

@@ -9,8 +9,6 @@ export const useIsMounted = () => {
         return () => {
             isMounted.current = false;
         };
-    });
-    return useCallback(() => {
-        isMounted.current
-    }, [])
+    }, []);
+    return useCallback(() => isMounted.current, [])
 };
